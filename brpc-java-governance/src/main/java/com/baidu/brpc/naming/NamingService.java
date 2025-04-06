@@ -20,6 +20,9 @@ import com.baidu.brpc.protocol.SubscribeInfo;
 
 import java.util.List;
 
+/**
+ * RPC API 注册管理
+ */
 public interface NamingService {
     /**
      * 查询符合条件的已注册数据，与订阅的推模式相对应，这里为拉模式，只返回一次结果。

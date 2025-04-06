@@ -43,6 +43,10 @@ import java.util.concurrent.TimeUnit;
  * updates its own window. If the mean value of the service in the window > the overall mean of the service, reduce its own weight.
  * On the contrary, increase its own weight. When the window is not full, the polling does not adjust the weight.
  *
+ * <p/> 从先进先出的队列中每两个生成一个父节点，然后将父节点加入到队列。重复该过程直到队列为空。每个父节点的权重都是左右子节点的权重之和。
+ * 这样构建的二叉树，所有的叶子节点构成了采样集合。
+ * 现在要求按照weight大小从采样集合中进行抽取。思路是：随即生成一个 [0, root.weight] 的整数 randInt，若 randInt <= curNode.weight
+ * 则元素在 curNode 的左子树，否则在右子树。由于父节点的weight是左右子节点之和，因此在查找右子树的时候，weight 的值要减去 curNode.left.weight
  * @author wangjiayin
  * @since 2018-09-03
  */
@@ -63,7 +67,7 @@ public class FairStrategy implements LoadBalanceStrategy {
     protected CopyOnWriteArrayList<Node> treeContainer = new CopyOnWriteArrayList<Node>();
     private volatile Timer timer;
     private RpcClient rpcClient;
-    private int latencyWindowSize;
+    private int latencyWindowSize; // {@see com.baidu.brpc.client.channel.BrpcPooledChannel.latencyWindow} 所表示队列的大小
     // {@see RpcClientOptions#activeInstancesRatioOfFairLoadBalance}
     private float activeInstancesRatio;
     // fair strategy will not work if the instances is less the minInstancesNum
@@ -177,6 +181,10 @@ public class FairStrategy implements LoadBalanceStrategy {
             return parent.left;
         }
 
+        // parent.weight = left.weight + right.weight.
+        // 当 left.weight >= weight 时，权重落在左子树
+        // 否则权重落在右子树，此时右子树的权重 = parent.weight - left.weight
+        // 所以在搜索右子树的时候搜索权重变为 weight - left.weight
         if (parent.left.weight >= weight) {
             return searchNode(parent.left, weight);
         } else {

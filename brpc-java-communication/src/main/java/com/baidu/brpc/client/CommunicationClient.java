@@ -48,6 +48,8 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
+ * RPC client。按照协议规则通过对应的 Channel 向远端发送 RPC 调用请求。
+ *
  * Created by huwenwei on 2019/12/06.
  */
 @SuppressWarnings("unchecked")

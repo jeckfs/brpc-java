@@ -37,6 +37,8 @@ import java.util.*;
 import java.util.concurrent.Future;
 
 /**
+ * RpcClient 对象的代理类
+ *
  * Created by huwenwei on 2017/4/25.
  */
 @SuppressWarnings("unchecked")
